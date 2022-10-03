@@ -138,6 +138,7 @@ where
 
     // --- Entity ---
     writeln!(out, "library ieee;")?;
+    writeln!(out, "use ieee.std_logic_1164.all;")?;
     writeln!(out)?;
     writeln!(out, "entity {} is", entity.name())?;
     writeln!(out, "\tport (")?;
