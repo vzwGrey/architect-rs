@@ -6,3 +6,14 @@ authors = ["vzwGrey <vzwgrey@gmail.com>"]
 repository = "https://github.com/vzwGrey/architect-rs"
 edition = "2021"
 publish = false
+
+[workspace]
+members = [
+  "crates/architect_internal",
+  "crates/architect_derive",
+]
+
+
+[dependencies]
+architect_internal = { path = "crates/architect_internal" }
+architect_derive = { path = "crates/architect_derive" }

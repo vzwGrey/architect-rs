@@ -1,2 +1,7 @@
 /target
 /Cargo.lock
+
+/testbenches/**/__pycache__
+/testbenches/**/sim_build
+/testbenches/**/vhdl
+/testbenches/**/results.xml
