@@ -1,4 +1,69 @@
-use std::rc::Rc;
+#[macro_export]
+macro_rules! rtl {
+    ($($tt:tt)*) => {
+        $crate::rtl_internal!(start => $($tt)*)
+    };
+}
+
+#[macro_export]
+macro_rules! rtl_internal {
+    (start => $($tt:tt)*) => {{
+        let mut architecture = Rtl::default();
+        $crate::rtl_internal!(&mut architecture => $($tt)*);
+        return architecture;
+    }};
+
+    ($architecture:expr => $self:ident . $signal_name:ident () = $value:expr ; $($rest:tt)*) => {
+        // $architecture
+        $architecture.assign($self.$signal_name(), $value);
+        // $crate::rtl_internal!($($rest:tt)*);
+    };
+}
+
+pub enum RtlExpression {
+    LiteralValue { value: LogicValue },
+}
+
+pub enum RtlStatement {
+    Assignment {
+        signal_name: &'static str,
+        value: RtlExpression,
+    },
+}
+
+#[derive(Default)]
+pub struct Rtl {
+    statements: Vec<RtlStatement>,
+}
+
+impl Rtl {
+    pub fn assign<T: LogicType>(
+        &mut self,
+        signal: Signal<T, OutputSignal>,
+        value: impl Into<LogicValue>,
+    ) {
+        self.statements.push(RtlStatement::Assignment {
+            signal_name: signal.name,
+            value: RtlExpression::LiteralValue {
+                value: value.into(),
+            },
+        })
+    }
+}
+
+pub enum LogicValue {
+    Low,
+    High,
+}
+
+impl From<bool> for LogicValue {
+    fn from(val: bool) -> Self {
+        match val {
+            false => LogicValue::Low,
+            true => LogicValue::High,
+        }
+    }
+}
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct LogicTypeId(usize);
@@ -29,7 +94,7 @@ impl<const HI: usize, const LO: usize> LogicType for LogicVector<HI, LO> {
 pub struct Context {}
 
 pub trait Entity {
-    fn create(context: Rc<Context>) -> Self;
+    fn create() -> Self;
     fn name(&self) -> &'static str;
     fn inputs(&self) -> Vec<&'static str>;
     fn outputs(&self) -> Vec<&'static str>;
@@ -55,13 +120,11 @@ impl<SignalType, InOut> Signal<SignalType, InOut> {
     }
 }
 
-pub struct Rtl;
-
 pub trait Architecture {
-    fn rtl(&self) -> Rtl;
+    fn elaborate(&self) -> Rtl;
 }
 
-pub fn translate_entity<M>(context: Rc<Context>) -> std::io::Result<()>
+pub fn translate_entity<M>() -> std::io::Result<()>
 where
     M: Entity + Architecture,
 {
@@ -70,7 +133,7 @@ where
     let stdout = std::io::stdout();
     let mut out = stdout.lock();
 
-    let entity = M::create(Rc::clone(&context));
+    let entity = M::create();
     let (inputs, outputs) = (entity.inputs(), entity.outputs());
 
     // --- Entity ---
@@ -102,9 +165,26 @@ where
     writeln!(out, "end {};", entity.name())?;
     writeln!(out)?;
 
+    let rtl = entity.elaborate();
+
     // --- Architecture ---
     writeln!(out, "architecture rtl of {} is", entity.name())?;
     writeln!(out, "begin")?;
+    for statement in &rtl.statements {
+        match statement {
+            RtlStatement::Assignment { signal_name, value } => {
+                let value = match value {
+                    RtlExpression::LiteralValue {
+                        value: LogicValue::Low,
+                    } => "'0'",
+                    RtlExpression::LiteralValue {
+                        value: LogicValue::High,
+                    } => "'1'",
+                };
+                writeln!(out, "\t{signal_name} <= {value};")?;
+            }
+        }
+    }
     writeln!(out, "end rtl;")?;
 
     Ok(())

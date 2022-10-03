@@ -56,7 +56,6 @@ pub fn entity(_args: TokenStream, input: TokenStream) -> TokenStream {
 
     let expanded = quote! {
         struct #entity_name {
-            context: ::std::rc::Rc<::architect::Context>,
         }
 
         impl #entity_name {
@@ -65,9 +64,8 @@ pub fn entity(_args: TokenStream, input: TokenStream) -> TokenStream {
         }
 
         impl ::architect::Entity for #entity_name {
-            fn create(context: ::std::rc::Rc<::architect::Context>) -> Self {
+            fn create() -> Self {
                 Self {
-                    context
                 }
             }
 

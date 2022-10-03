@@ -1,24 +1,25 @@
-use architect::{entity, translate_entity, Architecture, Context, Logic, LogicVector, Rtl};
+use architect::{entity, rtl, translate_entity, Architecture, Logic, LogicVector, Rtl};
 
 #[entity]
 struct ShiftRegister {
     #[input]
-    clk: Logic,
+    _clk: Logic,
     #[input]
-    input: Logic,
+    _input: Logic,
     #[output]
-    state: LogicVector<7, 0>,
+    _state: LogicVector<7, 0>,
     #[output]
     output: Logic,
 }
 
 impl Architecture for ShiftRegister {
-    fn rtl(&self) -> architect::Rtl {
-        Rtl
+    fn elaborate(&self) -> architect::Rtl {
+        rtl! {
+            self.output() = true;
+        }
     }
 }
 
 fn main() -> std::io::Result<()> {
-    let context = std::rc::Rc::new(Context::default());
-    translate_entity::<ShiftRegister>(context)
+    translate_entity::<ShiftRegister>()
 }
