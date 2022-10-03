@@ -16,5 +16,6 @@ async def test(dut):
         await RisingEdge(dut.clk)
         actual_output <<= 1
         actual_output |= dut.output.value
+        input_sequence >>= 1
 
     assert actual_output == expected_output
