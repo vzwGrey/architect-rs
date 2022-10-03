@@ -1,8 +1,6 @@
-use architect::{
-    translate_module, Architecture, Context, Logic, LogicVector, Module, ModuleInterface, Rtl,
-};
+use architect::{entity, translate_entity, Architecture, Context, Logic, LogicVector, Rtl};
 
-#[derive(Default, Module)]
+#[entity]
 struct ShiftRegister {
     #[input]
     clk: Logic,
@@ -21,6 +19,6 @@ impl Architecture for ShiftRegister {
 }
 
 fn main() -> std::io::Result<()> {
-    let mut context = Context::default();
-    translate_module::<ShiftRegister>(&mut context)
+    let context = std::rc::Rc::new(Context::default());
+    translate_entity::<ShiftRegister>(context)
 }

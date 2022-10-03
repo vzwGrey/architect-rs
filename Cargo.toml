@@ -10,10 +10,10 @@ publish = false
 [workspace]
 members = [
   "crates/architect_internal",
-  "crates/architect_derive",
+  "crates/architect_macro",
 ]
 
 
 [dependencies]
 architect_internal = { path = "crates/architect_internal" }
-architect_derive = { path = "crates/architect_derive" }
+architect_macro = { path = "crates/architect_macro" }
