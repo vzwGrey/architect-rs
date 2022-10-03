@@ -3,11 +3,11 @@ use architect::{entity, rtl, translate_entity, Architecture, Logic, LogicVector,
 #[entity]
 struct ShiftRegister {
     #[input]
-    _clk: Logic,
+    clk: Logic,
     #[input]
-    _input: Logic,
+    input: Logic,
     #[output]
-    _state: LogicVector<7, 0>,
+    state: LogicVector<7, 0>,
     #[output]
     output: Logic,
 }
